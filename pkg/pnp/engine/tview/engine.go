@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 
+	"github.com/ronna-s/gc-eu-25/pkg/maybe"
 	"github.com/ronna-s/gc-eu-25/pkg/pnp"
 	"github.com/ronna-s/gc-eu-25/pkg/pnp/engine"
 	"github.com/ronna-s/gc-eu-25/pkg/repo"
@@ -140,6 +142,30 @@ func alive(p pnp.Player) bool {
 	return true
 }
 
+func hasAsciiArt(p pnp.Player) maybe.Maybe[string] {
+	if v, ok := p.(interface{ AsciiArt() string }); ok {
+		return maybe.Some(v.AsciiArt())
+	}
+
+	return maybe.None[string]()
+}
+
+func hasString(p pnp.Player) maybe.Maybe[string] {
+	if v, ok := p.(interface{ String() string }); ok {
+		return maybe.Some(v.String())
+	}
+
+	return maybe.None[string]()
+}
+
+func hasName(p pnp.Player) maybe.Maybe[string] {
+	if v, ok := p.(interface{ Name() string }); ok {
+		return maybe.Some(v.Name())
+	}
+
+	return maybe.None[string]()
+}
+
 func (e *Engine) RenderPlayers(bandName string, players []pnp.Player, current int) *tview.Flex {
 	playersView := tview.NewFlex().SetDirection(tview.FlexRow)
 	playersView.SetTitle(bandName).
@@ -153,7 +179,7 @@ func (e *Engine) RenderPlayers(bandName string, players []pnp.Player, current in
 
 		if alive(p) {
 			art.SetTextColor(tcell.ColorWhite)
-			art.SetText(p.AsciiArt()) //todo: task in functional programming lesson
+			art.SetText(hasAsciiArt(p).Or(hasString(p)).Or(hasName(p)).Else("Player#" + strconv.Itoa(i)))
 		} else {
 			art.SetText(engine.Gravestone).SetTextColor(tcell.ColorPurple)
 		}

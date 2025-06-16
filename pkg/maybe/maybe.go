@@ -7,4 +7,37 @@ package maybe
 // Go to the pkg/pnp/engine/tview package and fix the code that uses the AsciiArt method.
 // Remove the AsciiArt method from the Player interface and implement it in each concrete player type instead.
 
+// Maybe represents a generic type that can hold a value or be invalid.
+type Maybe[T any] struct {
+	value   T
+	valid   bool
+}
+
+// None returns an invalid Maybe instance.
+func None[T any]() Maybe[T] {
+	return Maybe[T]{valid: false}
+}
+
+// Some returns a valid Maybe instance with the given value.
+func Some[T any](value T) Maybe[T] {
+	return Maybe[T]{value: value, valid: true}
+}
+
+// Else returns the value if valid, or the provided default value if invalid.
+func (m Maybe[T]) Else(defaultValue T) T {
+	if m.valid {
+		return m.value
+	}
+
+	return defaultValue
+}
+
+func (m Maybe[T]) Or(other Maybe[T]) Maybe[T] {
+	if m.valid {
+		return m
+	}
+
+	return other
+}
+
 // Happy solving!

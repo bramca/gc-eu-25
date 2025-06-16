@@ -1,12 +1,17 @@
 package pnp
 
-import _ "embed"
+import (
+	_ "embed"
+)
 
 func NewMinion(name string) Minion {
-	return Minion{}
+	return Minion{
+		Name: name,
+	}
 }
 
 type Minion struct {
+	ImmortalPlayer
 	Name string
 }
 
@@ -38,5 +43,21 @@ func (m Minion) PossibleActions(g *Game) []Action {
 }
 
 func (m Minion) String() string {
-	return "Minion"
+	return "Minion: " + m.Name
+}
+
+func (m Minion) IsMinion() bool {
+	return true
+}
+
+type minionPlayer interface {
+	IsMinion() bool
+}
+
+func isMinion(p Player) bool {
+	if mp, ok := p.(minionPlayer); ok {
+		return mp.IsMinion()
+	}
+
+	return false
 }

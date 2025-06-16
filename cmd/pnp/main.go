@@ -20,11 +20,11 @@ func (p *ProductManager) PossibleActions(g *pnp.Game) []pnp.Action {
 		{
 			Description: "Pay wages",
 			OnSelect: func(g *pnp.Game) pnp.Outcome {
-				if g.Coins < len(g.Players) {
+				if g.Coins < g.NumberOfPlayersAlive() {
 					p.Fired = true
 					return "Not enough coins to pay wages. Band is bankrupt. PM is fired!"
 				}
-				g.Coins -= len(g.Players)
+				g.Coins -= g.NumberOfPlayersAlive()
 				return "Wages paid"
 			},
 		},

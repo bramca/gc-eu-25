@@ -23,10 +23,17 @@ type (
 	Outcome string
 
 	// Player represents a P&P player
-	Player interface {
+	BasePlayer interface {
 		PossibleActions(g *Game) []Action
-		AsciiArt() string
+	}
+
+	MortalPlayer interface {
 		Alive() bool
+	}
+
+	Player interface {
+		BasePlayer
+		MortalPlayer
 	}
 
 	// Engine represents the game's user interface rendering engine
@@ -44,7 +51,7 @@ type (
 
 // New returns a new P&P game
 func New(players ...Player) *Game {
-	g := Game{Players: append(players), Prod: NewProduction(), Coins: 10}
+	g := Game{Players: append(players, NewMinion("Jurgen"), NewDwarf("Gimly"), NewNamelessPlayer()), Prod: NewProduction(), Coins: 10}
 	return &g
 }
 
@@ -64,18 +71,36 @@ func (g *Game) Run(e Engine) {
 func (g *Game) MainLoop(e Engine) {
 	g.Score = rand.Intn(10000)
 	e.RenderGame(g)
+	if allPlayersDead(g.Players) {
+		e.GameOver()
+	}
 	e.SelectAction(g, g.Players[g.CurrentPlayer], func(selected Action) {
 		outcome := selected.Selected(g)
 		e.RenderOutcome(outcome, func() {
 			g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
+			for !g.Players[g.CurrentPlayer].Alive() && !allPlayersDead(g.Players) {
+				g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
+			}
 			g.MainLoop(e)
 		})
 	})
+
+}
+
+func (g *Game) NumberOfPlayersAlive() int {
+	result := 0
+	for _, player := range g.Players {
+		if player.Alive() {
+			result++
+		}
+	}
+
+	return result
 }
 
 func allPlayersDead(players []Player) bool {
 	for _, player := range players {
-		if player.Alive() {
+		if !isMinion(player) && player.Alive() {
 			return false
 		}
 	}
