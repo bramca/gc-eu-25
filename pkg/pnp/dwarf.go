@@ -13,7 +13,7 @@ type Dwarf struct {
 func NewDwarf(name string) *Dwarf {
 	return &Dwarf{
 		Name: name,
-		PickaxeDurability: 10, // Dwarf starts with a durable pickaxe
+		PickaxeDurability: rand.Intn(10), // Dwarf starts with a durable pickaxe
 	}
 }
 
@@ -51,4 +51,8 @@ func (d *Dwarf) String() string {
 
 func (d *Dwarf) Alive() bool {
 	return d.PickaxeDurability > 0
+}
+
+func (d *Dwarf) Heal() {
+	d.PickaxeDurability = rand.Intn(10) // Repair the pickaxe to full durability
 }

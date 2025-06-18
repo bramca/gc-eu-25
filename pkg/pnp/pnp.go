@@ -2,7 +2,6 @@ package pnp
 
 import (
 	_ "embed"
-	"math/rand"
 
 	"github.com/ronna-s/gc-eu-25/pkg/repo"
 )
@@ -51,7 +50,7 @@ type (
 
 // New returns a new P&P game
 func New(players ...Player) *Game {
-	g := Game{Players: append(players, NewMinion("Jurgen"), NewDwarf("Gimly"), NewNamelessPlayer()), Prod: NewProduction(), Coins: 10}
+	g := Game{Players: append(players, NewDwarf("Gimli"), NewNamelessPlayer(), NewMinion("Jurgen"), NewVibeCoder("R. Stallman")), Prod: NewProduction(), Coins: 15}
 	return &g
 }
 
@@ -69,11 +68,15 @@ func (g *Game) Run(e Engine) {
 
 // MainLoop kicks off the next players round
 func (g *Game) MainLoop(e Engine) {
-	g.Score = rand.Intn(10000)
 	e.RenderGame(g)
 	if allPlayersDead(g.Players) {
 		e.GameOver()
 	}
+
+	if g.Coins > 100 {
+		e.GameWon()
+	}
+
 	e.SelectAction(g, g.Players[g.CurrentPlayer], func(selected Action) {
 		outcome := selected.Selected(g)
 		e.RenderOutcome(outcome, func() {
@@ -84,6 +87,7 @@ func (g *Game) MainLoop(e Engine) {
 			g.MainLoop(e)
 		})
 	})
+
 
 }
 

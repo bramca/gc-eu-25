@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"strconv"
 	"strings"
 	"time"
 
@@ -166,6 +165,10 @@ func hasName(p pnp.Player) maybe.Maybe[string] {
 	return maybe.None[string]()
 }
 
+func defaultPlayerName(i int) string {
+	return fmt.Sprintf("Player#%d", i)
+}
+
 func (e *Engine) RenderPlayers(bandName string, players []pnp.Player, current int) *tview.Flex {
 	playersView := tview.NewFlex().SetDirection(tview.FlexRow)
 	playersView.SetTitle(bandName).
@@ -179,12 +182,12 @@ func (e *Engine) RenderPlayers(bandName string, players []pnp.Player, current in
 
 		if alive(p) {
 			art.SetTextColor(tcell.ColorWhite)
-			art.SetText(hasAsciiArt(p).Or(hasString(p)).Or(hasName(p)).Else("Player#" + strconv.Itoa(i)))
+			art.SetText(hasAsciiArt(p).Or(hasString(p)).Or(hasName(p)).Else(defaultPlayerName(i+1)))
 		} else {
 			art.SetText(engine.Gravestone).SetTextColor(tcell.ColorPurple)
 		}
 		if i == current {
-			art.SetTitle(fmt.Sprintf("It's %s's turn", p)).
+			art.SetTitle(fmt.Sprintf("It's %s's turn", hasString(p).Or(hasName(p)).Else(defaultPlayerName(i+1)))).
 				SetBorderColor(tcell.ColorYellow)
 		}
 
@@ -210,7 +213,7 @@ func (e *Engine) renderProd() {
 	}
 
 	text := e.Prod.GetText(false)
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		c := string(rune(Rand(128-48) + 48))
 		r := Rand(len(text))
 		text = text[:r] + c + text[r+1:]
@@ -290,7 +293,7 @@ func (e *Engine) Welcome(leaderboard []repo.ScoreEntry, fn func(bandName string)
 		AddItem(gameArt, 0, 2, false).
 		AddItem(leaderboardText, 0, 1, false)
 	// BandName input
-	nameInput := tview.NewInputField().SetLabel("What is the name of your band?  ").SetText("Cool Band").SetFieldTextColor(tcell.ColorBlack).SetFieldBackgroundColor(tcell.ColorDarkCyan).SetFieldWidth(32)
+	nameInput := tview.NewInputField().SetLabel("What is the name of your band?  ").SetText("Vibe Coders").SetFieldTextColor(tcell.ColorBlack).SetFieldBackgroundColor(tcell.ColorDarkCyan).SetFieldWidth(32)
 	nameInput.SetDoneFunc(func(key tcell.Key) {
 		if key != tcell.KeyEnter {
 			return

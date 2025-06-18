@@ -2,6 +2,7 @@ package pnp
 
 import (
 	_ "embed"
+	"math/rand"
 )
 
 func NewMinion(name string) Minion {
@@ -33,12 +34,21 @@ func (m Minion) PossibleActions(g *Game) []Action {
 			},
 		})
 	}
-	actions = append(actions, Action{
-		Description: "Add a bug to the code",
-		OnSelect: func(g *Game) Outcome {
-			return Outcome(g.Prod.Upset())
+	actions = append(actions,
+		Action{
+			Description: "Add a bug to the code",
+			OnSelect: func(g *Game) Outcome {
+				return Outcome(g.Prod.Upset())
+			},
 		},
-	})
+		Action{
+			Description: "Add a feature to the code",
+			OnSelect: func(g *Game) Outcome {
+				g.Score += rand.Intn(100)
+				return Outcome(g.Prod.CalmDown())
+			},
+		},
+	)
 	return actions
 }
 

@@ -15,21 +15,23 @@ func (p *NamelessPlayer) PossibleActions(g *Game) []Action {
 		{
 			Description: "Do nothing",
 			OnSelect: func(g *Game) Outcome {
+				if !p.IsDead {
+					p.IsDead = rand.Intn(10) < 3 // Randomly set dead or alive
+				}
+
 				return "You did nothing"
 			},
 		},
 	}
 }
 
-func (p *NamelessPlayer) Name() string {
-	return "No Name"
-}
-
 func (p *NamelessPlayer) Alive() bool {
-	if !p.IsDead {
-		p.IsDead = rand.Intn(10) < 3 // Randomly set dead or alive
-	}
 
 	return !p.IsDead
+}
+
+func (p *NamelessPlayer) Heal() {
+	// TODO: Implement
+	p.IsDead = false
 }
 
