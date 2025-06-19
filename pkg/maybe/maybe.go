@@ -18,9 +18,24 @@ func None[T any]() Maybe[T] {
 	return Maybe[T]{valid: false}
 }
 
-// Some returns a valid Maybe instance with the given value.
-func Some[T any](value T) Maybe[T] {
+func This[T any](value T) Maybe[T] {
 	return Maybe[T]{value: value, valid: true}
+}
+
+func If[T any](check bool) Maybe[T] {
+	return Maybe[T]{valid: check}
+}
+
+func (m Maybe[T]) If(check bool) Maybe[T] {
+	m.valid = check
+
+	return  m
+}
+
+func (m Maybe[T]) Then(value T) Maybe[T] {
+	m.value = value
+
+	return m
 }
 
 // Else returns the value if valid, or the provided default value if invalid.

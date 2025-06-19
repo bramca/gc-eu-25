@@ -1,13 +1,16 @@
 package pnp
 
+import "fmt"
+
 type ProductManager struct {
 	Fired bool
+	pizzaRequested bool
 }
 
 func (p *ProductManager) PossibleActions(g *Game) []Action {
 	return []Action{
 		{
-			Description: "Pay wages",
+			Description: fmt.Sprintf("Pay wages (cost %d)", g.NumberOfPlayersAlive()),
 			OnSelect: func(g *Game) Outcome {
 				if g.Coins < g.NumberOfPlayersAlive() {
 					p.Fired = true
@@ -17,19 +20,32 @@ func (p *ProductManager) PossibleActions(g *Game) []Action {
 				return "Wages paid"
 			},
 		},
-		// TODO: Add action that starts a goroutine that
-		// sleeps a random amount of time and then delivers a pizza
-		/* wrap in goroutine
-		time.Sleep(rand.Intn(20)*time.Second)
-		e.PizzaDelivery(func() {
-			for _, player := range g.Players {
-				if v, ok := player.(interface{ Heal() }); ok {
-					v.Heal() // Heal players that can heal
+		{
+			Description: fmt.Sprintf("Order Pizza (cost %d)", g.NumberOfPlayersAlive() * 2),
+			OnSelect: func(g *Game) Outcome {
+				if g.Coins < g.NumberOfPlayersAlive() {
+					p.Fired = true
+					return "Not enough coins to pay wages. Band is bankrupt. PM is fired!"
 				}
-			}
-		})
-		*/
+				if g.Coins < g.NumberOfPlayersAlive() * 2 {
+					return "Not enough coins to buy pizza "
+				}
+				g.Coins -= g.NumberOfPlayersAlive() * 2
+
+				p.pizzaRequested = true
+
+				return "Pizza's ordered, please wait for delivery"
+			},
+		},
 	}
+}
+
+func (p *ProductManager) PizzaRequested() bool {
+	return p.pizzaRequested
+}
+
+func (p *ProductManager) PizzaDelivered() {
+	p.pizzaRequested = false
 }
 
 func (p *ProductManager) String() string {
@@ -45,4 +61,8 @@ func (p *ProductManager) AsciiArt() string {
 
 func (p *ProductManager) Alive() bool {
 	return !p.Fired
+}
+
+func (p *ProductManager) Heal() {
+	p.Fired = false
 }

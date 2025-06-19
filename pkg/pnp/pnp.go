@@ -2,6 +2,8 @@ package pnp
 
 import (
 	_ "embed"
+	"math/rand"
+	"time"
 
 	"github.com/ronna-s/gc-eu-25/pkg/repo"
 )
@@ -17,6 +19,7 @@ type (
 		Coins          int
 		CurrentPlayer  int
 		ProductManager string
+		Pizzas         int
 	}
 
 	Outcome string
@@ -60,7 +63,10 @@ func (g *Game) Run(e Engine) {
 	e.Welcome(leaderboard, func(bandName string) {
 		g.BandName = bandName
 		e = e.WithOnExit(func() {
-			repo.Persist(repo.ScoreEntry{Score: g.Score, BandName: g.BandName})
+			err := repo.Persist(repo.ScoreEntry{Score: g.Score, BandName: g.BandName})
+			if err != nil {
+				panic(err)
+			}
 		})
 		g.MainLoop(e)
 	})
@@ -84,10 +90,32 @@ func (g *Game) MainLoop(e Engine) {
 			for !g.Players[g.CurrentPlayer].Alive() && !allPlayersDead(g.Players) {
 				g.CurrentPlayer = (g.CurrentPlayer + 1) % len(g.Players)
 			}
+
+			if pr, ok := g.Players[g.CurrentPlayer].(interface {
+				PizzaRequested() bool
+				PizzaDelivered()
+			}); ok {
+				if pr.PizzaRequested() {
+					// TODO: Look at the concurrency package to implement this
+					// concurrency.Run(...)
+					go func() {
+						time.Sleep(time.Duration(rand.Intn(20)) * time.Second)
+						e.PizzaDelivery(func() {
+							g.Pizzas += g.NumberOfPlayersAlive()
+							for _, player := range g.Players {
+								if v, ok := player.(interface{ Heal() }); ok {
+									v.Heal() // Heal players that can heal
+								}
+							}
+						})
+						pr.PizzaDelivered()
+					}()
+				}
+			}
+
 			g.MainLoop(e)
 		})
 	})
-
 
 }
 

@@ -70,7 +70,7 @@ func GetAll() ([]ScoreEntry, error) {
 
 // Persist appends a new leaderboard entry to the CSV, allowing duplicates and not checking for existing entries.
 func Persist(entry ScoreEntry) error {
-	csvPath := filepath.Join("pkg", "pnp", "repo", "allscores.csv")
+	csvPath := filepath.Join("pkg", "repo", "allscores.csv")
 	file, err := os.OpenFile(csvPath, os.O_RDWR|os.O_APPEND|os.O_CREATE, 0644)
 	if err != nil {
 		return err

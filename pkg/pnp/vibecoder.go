@@ -3,6 +3,8 @@ package pnp
 import (
 	"fmt"
 	"math/rand"
+
+	"github.com/ronna-s/gc-eu-25/pkg/maybe"
 )
 
 type VibeCoder struct {
@@ -23,14 +25,14 @@ func (p *VibeCoder) PossibleActions(g *Game) []Action {
 			Description: "Do nothing",
 			OnSelect: func(g *Game) Outcome {
 				p.Contribution -= 1
-				g.Score += 10
+				g.Score += 5
 				if p.Contribution <= -10 {
 					p.Fired = true
 
 					return "Your contribution is too low, you are fired!"
 				}
 
-				return "You did nothing"
+				return "You did nothing => +5 Score"
 			},
 		},
 		{
@@ -52,7 +54,7 @@ func (p *VibeCoder) PossibleActions(g *Game) []Action {
 				g.Coins += cost
 				g.Score += contribution
 
-				return Outcome(fmt.Sprintf("AI did something -> cost %d coins -> gain %d score", cost, contribution))
+				return Outcome(fmt.Sprintf("AI did something => cost %d coins => %s score", cost, maybe.If[string](contribution > -1).Then(fmt.Sprintf("+%d", contribution)).Else(fmt.Sprintf("%d", contribution))))
 			},
 		},
 	}

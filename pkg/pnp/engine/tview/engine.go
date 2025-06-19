@@ -86,7 +86,7 @@ func (e *Engine) RenderGame(g *pnp.Game) {
 			AddItem(e.Prod, 0, 1, false), 0, 1, true)
 	inventory.Clear()
 	inventory.SetTitle("Inventory").SetBorder(true)
-	inventory.SetText(fmt.Sprintf("Coins: %d", g.Coins))
+	inventory.SetText(fmt.Sprintf("Score: %d\nCoins: %d\nPizza's: %d", g.Score, g.Coins, g.Pizzas))
 	e.Pages.AddAndSwitchToPage(pageName, view, true)
 }
 
@@ -143,7 +143,7 @@ func alive(p pnp.Player) bool {
 
 func hasAsciiArt(p pnp.Player) maybe.Maybe[string] {
 	if v, ok := p.(interface{ AsciiArt() string }); ok {
-		return maybe.Some(v.AsciiArt())
+		return maybe.This(v.AsciiArt())
 	}
 
 	return maybe.None[string]()
@@ -151,7 +151,7 @@ func hasAsciiArt(p pnp.Player) maybe.Maybe[string] {
 
 func hasString(p pnp.Player) maybe.Maybe[string] {
 	if v, ok := p.(interface{ String() string }); ok {
-		return maybe.Some(v.String())
+		return maybe.This(v.String())
 	}
 
 	return maybe.None[string]()
@@ -159,7 +159,7 @@ func hasString(p pnp.Player) maybe.Maybe[string] {
 
 func hasName(p pnp.Player) maybe.Maybe[string] {
 	if v, ok := p.(interface{ Name() string }); ok {
-		return maybe.Some(v.Name())
+		return maybe.This(v.Name())
 	}
 
 	return maybe.None[string]()
