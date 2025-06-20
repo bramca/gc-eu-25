@@ -28,7 +28,8 @@ func (p *ProductManager) PossibleActions(g *Game) []Action {
 					return "Not enough coins to pay wages. Band is bankrupt. PM is fired!"
 				}
 				if g.Coins < g.NumberOfPlayersAlive() * 2 {
-					return "Not enough coins to buy pizza "
+					g.Coins -= g.NumberOfPlayersAlive()
+					return "Not enough coins to buy pizza , can only afford the wages"
 				}
 				g.Coins -= g.NumberOfPlayersAlive() * 2
 

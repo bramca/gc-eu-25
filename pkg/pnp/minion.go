@@ -8,32 +8,36 @@ import (
 	"github.com/ronna-s/gc-eu-25/pkg/maybe"
 )
 
-func NewMinion(name string) Minion {
-	return Minion{
+func NewMinion(name string) *Minion {
+	return &Minion{
 		Name: name,
+		Skill: 150,
 	}
 }
 
 type Minion struct {
 	ImmortalPlayer
 	Name string
+	Skill int
 }
 
 //go:embed resources/minion.txt
 var minionArt string
 
-func (m Minion) AsciiArt() string {
+func (m *Minion) AsciiArt() string {
 	return minionArt
 }
 
-func (m Minion) PossibleActions(g *Game) []Action {
+func (m *Minion) PossibleActions(g *Game) []Action {
 	var actions []Action
 	if g.Coins > 0 {
 		actions = append(actions, Action{
 			Description: "Buy a banana and eat it (costs 1 gold coin)",
 			OnSelect: func(g *Game) Outcome {
 				g.Coins--
-				return "You ate a banana"
+				skill := rand.Intn(50)
+				m.Skill += skill
+				return Outcome(fmt.Sprintf("You ate a banana => +%d skill", skill))
 			},
 		})
 	}
@@ -41,7 +45,7 @@ func (m Minion) PossibleActions(g *Game) []Action {
 		Action{
 			Description: "Add a feature to the code",
 			OnSelect: func(g *Game) Outcome {
-				addScore := -50 + rand.Intn(200)
+				addScore := -m.Skill/3 + rand.Intn(m.Skill)
 				g.Score += addScore
 
 				addedValue := ""
@@ -57,18 +61,21 @@ func (m Minion) PossibleActions(g *Game) []Action {
 					addedValue = fmt.Sprintf("=> feature was actually a bug => -%d coins ", costCoins)
 				}
 
-				return Outcome(fmt.Sprintf("Feature added! Score %s %s=> %s", maybe.If[string](addScore > -1).Then(fmt.Sprintf("+%d", addScore)).Else(fmt.Sprintf("%d", addScore)), addedValue, maybe.This(g.Prod.Upset()).If(addScore < 0).Else(g.Prod.CalmDown())))
+				scoreStr := maybe.If[string](addScore > -1).Then(fmt.Sprintf("+%d", addScore)).Else(fmt.Sprintf("%d", addScore))
+				prodReaction := maybe.This(g.Prod.Upset).If(addScore < 0).Or(maybe.This(g.Prod.NoImpact).If(addScore == 0)).Else(g.Prod.CalmDown)
+
+				return Outcome(fmt.Sprintf("Feature added! Score %s %s=> %s", scoreStr, addedValue, prodReaction()))
 			},
 		},
 	)
 	return actions
 }
 
-func (m Minion) String() string {
-	return "Minion: " + m.Name
+func (m *Minion) String() string {
+	return fmt.Sprintf("Minion (%d skill): %s", m.Skill, m.Name)
 }
 
-func (m Minion) IsMinion() bool {
+func (m *Minion) IsMinion() bool {
 	return true
 }
 

@@ -38,7 +38,7 @@ func (p *VibeCoder) PossibleActions(g *Game) []Action {
 		{
 			Description: "Ask ChatGPT",
 			OnSelect: func(g *Game) Outcome {
-				contribution := -10 + rand.Intn(20)
+				contribution := -10 + rand.Intn(25)
 				cost := -1 * rand.Intn(5)
 				p.Contribution += contribution
 				if g.Coins + cost < 0 {
@@ -54,7 +54,10 @@ func (p *VibeCoder) PossibleActions(g *Game) []Action {
 				g.Coins += cost
 				g.Score += contribution
 
-				return Outcome(fmt.Sprintf("AI did something => cost %d coins => %s score", cost, maybe.If[string](contribution > -1).Then(fmt.Sprintf("+%d", contribution)).Else(fmt.Sprintf("%d", contribution))))
+				prodReaction := maybe.If[func() string](contribution > 9).Then(g.Prod.CalmDown).Or(maybe.This(g.Prod.NoImpact).If(contribution > -1)).Else(g.Prod.Upset)
+				coinsStr := maybe.If[string](contribution > -1).Then(fmt.Sprintf("+%d", contribution)).Else(fmt.Sprintf("%d", contribution))
+
+				return Outcome(fmt.Sprintf("AI did something => cost %d coins => %s score => %s", cost, coinsStr, prodReaction()))
 			},
 		},
 	}
